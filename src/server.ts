@@ -14,6 +14,11 @@ import { error } from 'console';
 import { engine } from 'express-handlebars';
 import sass from 'node-sass-middleware';
 import logger from './middlewares/logger';
+import cookieParser from 'cookie-parser';
+import setLocals from './middlewares/setLocals';
+import csurf from 'csurf';
+import session from 'express-session';
+import { v4 as uuidv4 } from 'uuid';
 
 const models = [VersaoDB, Funcionarios, Departamentos, Projetos, Dependentes];
 
@@ -52,6 +57,18 @@ export class Api {
   }
 
   private async middleware() {
+    this.server.use(express.urlencoded({ extended: false }));
+    this.server.use(cookieParser());
+    this.server.use(setLocals);
+    this.server.use(csurf({ cookie: true }));
+    this.server.use(
+      session({
+        genid: () => uuidv4(),
+        secret: 'hOJhbdiuwD548SDD',
+        resave: true,
+        saveUninitialized: true,
+      }),
+    );
     this.server.use(logger('completo'));
 
     this.server.use(
